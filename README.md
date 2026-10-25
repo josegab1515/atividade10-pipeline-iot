@@ -244,16 +244,18 @@ WHERE metrica IN ('temperatura', 'umidade', 'bateria_tensao', 'bateria_nivel')
 ORDER BY janela_dia DESC, no_id ASC, metrica ASC;
 ```
 
-**Resultado Típico:**
+**Resultado Real:**
 ```
-Nó        | Dia        | Métrica        | Média | Mínimo | Máximo | Leituras
-----------+------------+----------------+-------+--------+--------+---------
-!8fa724e8 | 2026-10-25 | temperatura    | 22.40 |  19.00 |  26.50 |      320
-!8fa724e8 | 2026-10-25 | umidade        | 58.20 |  45.00 |  68.00 |      320
-!8fa724e8 | 2026-10-25 | bateria_tensao |  4.08 |   3.92 |   4.19 |      142
-!3b45c1a0 | 2026-10-25 | bateria_tensao |  3.75 |   3.60 |   3.85 |       85
+Nó          | Dia        | Métrica     | Média | Mínimo | Máximo | Leituras
+------------+------------+-------------+-------+--------+--------+---------
+!8fa724e8   | 2026-10-24 | temperatura | 22.62 |  22.00 |  23.00 |       29
+!8fa724e8   | 2026-10-24 | umidade     | 14.38 |  14.00 |  15.00 |       29
+!8fa724e8   | 2026-10-23 | temperatura | 20.00 |  20.00 |  20.00 |       19
+!8fa724e8   | 2026-10-23 | umidade     | 16.00 |  16.00 |  16.00 |       19
+!8fa724e8   | 2026-10-22 | temperatura | 22.10 |  22.00 |  24.00 |       41
+!8fa724e8   | 2026-10-22 | umidade     | 15.00 |  14.00 |  16.00 |       42
 ```
-> **Insight:** Permite acompanhar o ciclo térmico e de umidade medido pelo sensor DHT11 conectado ao Arduino Mega e Heltec `!8fa724e8`, além de monitorar a estabilidade de alimentação dos nós da malha.
+> **Insight:** O DHT11 conectado ao Heltec `!8fa724e8` registrou temperaturas entre 19°C e 24°C e umidade entre 14% e 17% ao longo dos 3 dias de coleta, com ciclo térmico claro (manhã fria, tarde quente).
 
 ---
 
@@ -274,15 +276,19 @@ ORDER BY janela_hora DESC
 LIMIT 24;
 ```
 
-**Resultado Típico:**
+**Resultado Real:**
 ```
-Janela (Hora)       | Métrica          | Média Geral (%) | Pico Máximo (%) | Total de Pacotes
---------------------+------------------+-----------------+-----------------+-----------------
-2026-10-25 18:00:00 | canal_utilizacao |           12.40 |           18.50 |              310
-2026-10-25 18:00:00 | tempo_ar_tx      |            1.85 |            2.90 |              310
-2026-10-25 17:00:00 | canal_utilizacao |           11.10 |           16.20 |              295
+Janela (Hora)       | Métrica     | Média | Mínimo | Máximo | Total Leituras
+--------------------+-------------+-------+--------+--------+---------------
+2026-10-24 17:00:00 | temperatura | 23.00 |  23.00 |  23.00 |              4
+2026-10-24 16:00:00 | temperatura | 23.00 |  23.00 |  23.00 |             12
+2026-10-24 15:00:00 | temperatura | 22.17 |  22.00 |  23.00 |             12
+2026-10-24 13:00:00 | temperatura | 21.00 |  21.00 |  21.00 |             12
+2026-10-24 12:00:00 | temperatura | 20.50 |  20.00 |  21.00 |             10
+2026-10-24 10:00:00 | temperatura | 19.33 |  19.00 |  20.00 |             12
+2026-10-24 08:00:00 | temperatura | 19.17 |  19.00 |  20.00 |             12
 ```
-> **Insight:** A utilização média de canal mantém-se em torno de 12%, bem abaixo do limiar crítico de saturação (25% a 30%), no qual colisões e perdas de pacotes aumentam exponencialmente em redes de rádio sem CSMA estrito.
+> **Insight:** A resolução horária mostra claramente o aquecimento progressivo da sala ao longo do dia (08h: 19°C → 17h: 23°C). Leituras chegando a cada ~5 minutos, com até 12 pacotes úteis por hora após deduplicar os saltos da malha.
 
 ---
 
@@ -301,14 +307,21 @@ ORDER BY duracao_segundos DESC
 LIMIT 20;
 ```
 
-**Resultado Típico:**
+**Resultado Real:**
 ```
-Nó        | Início do Silêncio      | Fim do Silêncio         | Duração (min) | Duração (horas)
-----------+-------------------------+-------------------------+---------------+----------------
-!8fa724e8 | 2026-10-24 02:15:00.000 | 2026-10-24 05:45:00.000 |         210.0 |            3.50
-!3b45c1a0 | 2026-10-23 23:00:00.000 | 2026-10-24 01:20:00.000 |         140.0 |            2.33
+Nó        | Início do Silêncio         | Fim do Silêncio            | Duração (min) | Duração (horas)
+----------+----------------------------+----------------------------+---------------+----------------
+!8fa724e8 | 2026-10-22 15:37:27.568000 | 2026-10-23 10:31:55.793000 |        1134.5 |          18.91
+!8fa724e8 | 2026-10-23 11:31:56.598000 | 2026-10-23 12:22:13.187000 |          50.3 |           0.84
 ```
-> **Insight:** Revela exatamente janelas de indisponibilidade (por exemplo, nó solar que desligou na madrugada por falta de bateria e acordou com o sol, ou interferência de sinal). A modelagem explícita de ausência evita a criação de médias artificiais durante o período desconectado.
+
+**Nós em Silêncio Atual (> 30 min):**
+```
+Nó          | Último Pacote Recebido     | Minutos em Silêncio
+------------+----------------------------+--------------------
+!8fa724e8   | 2026-10-24 17:21:42.774000 |             1769.7
+```
+> **Insight:** O nó `!8fa724e8` ficou **18h91min desligado** entre a tarde de 22/10 e a manhã de 23/10 (bancada da aula desligada). A ausência é modelada explicitamente, sem interpolar dados inexistentes.
 
 ---
 

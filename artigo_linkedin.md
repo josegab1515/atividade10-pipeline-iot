@@ -58,16 +58,17 @@ Para responder as necessidades analíticas e operacionais, distribuí os dados t
 
 Com os dados modelados sobre a base real coletada pela turma, obtivemos insights operacionais claros:
 
-1. **Comportamento Diário dos Sensores (DHT11):** Acompanhamos a curva térmica real do nosso nó `!8fa724e8`. No dia 24/10, por exemplo, a temperatura começou em 19.17°C às 08h e escalou até 23.00°C às 17h conforme a sala aquecia, enquanto a umidade relativa caiu de 16% para 14%.
-2. **Saturação e Resolução Horária da Rede:** As agregações horárias comprimiram milhares de registros em 70 janelas temporais limpas, permitindo visualizar com precisão a taxa de chegada de leituras sem onerar o banco com consultas pesadas.
-3. **Detecção de Silêncio e Gaps:** O pipeline identificou exatamente 2 grandes períodos de silêncio do nó `!8fa724e8` — o maior deles durou **18.9 horas** (entre o fim da tarde de 22/10 e a manhã de 23/10, quando a bancada foi desligada). A ausência foi registrada formalmente sem criar dados falsos.
+1. **Comportamento Diário dos Sensores (DHT11):** Acompanhamos a curva térmica real do nosso nó `!8fa724e8`. No dia 24/10, a temperatura começou em 19,17°C às 08h e escalou até 23,00°C às 17h conforme a sala aquecia, enquanto a umidade relativa caiu de 16% para 14%.
+2. **Saturação e Resolução Horária da Rede:** As agregações horárias comprimiram milhares de registros em janelas temporais limpas, permitindo visualizar com precisão a taxa de chegada de leituras sem onerar o banco com consultas pesadas.
+3. **Detecção de Silêncio e Gaps:** O pipeline identificou 2 períodos de silêncio do nó `!8fa724e8` — o maior durou **18,91 horas** (entre 22/10 às 15h37 e 23/10 às 10h31, quando a bancada ficou desligada) e um segundo gap de **50 minutos** no mesmo dia 23/10. A ausência foi registrada formalmente sem criar dados falsos.
 
-### 📈 Auditoria de Qualidade dos Dados (Métricas Reais no Redis):
-- **Pacotes brutos lidos:** 2.729
-- **Duplicatas de rádio eliminadas:** 1.781 (mais de 65% do tráfego da malha eram retransmissões repetidas!)
-- **Timestamps inválidos corrigidos:** 39
-- **Pacotes isolados na quarentena:** 44 (mensagens de texto cruas sem métricas numéricas)
-- **Métricas limpas persistidas:** 1.808 registros na série temporal
+### 📈 Auditoria de Qualidade dos Dados (Métricas Reais do Redis):
+- **Pacotes brutos lidos:** 5.139
+- **Duplicatas de rádio eliminadas:** 3.352 (mais de **65%** do tráfego eram retransmissões repetidas!)
+- **Timestamps inválidos sinalizados:** 72
+- **Pacotes isolados na quarentena:** 84 (mensagens sem métricas numéricas úteis)
+- **Métricas limpas persistidas:** 3.406 registros na série temporal
+- **Buracos de conectividade detectados:** 4 eventos
 
 Todo o pipeline foi empacotado em **Docker** e construído em **Python** com controle atômico de checkpoint e transações em lote, garantindo reinício resiliente sem perda nem duplicidade.
 
