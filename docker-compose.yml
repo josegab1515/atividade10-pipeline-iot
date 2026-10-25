@@ -1,0 +1,57 @@
+version: "3.8"
+
+services:
+  # ============================================================================
+  # Pipeline Contínuo: Ingestão, Limpeza, Agregação e Quarentena
+  # ============================================================================
+  pipeline:
+    build: .
+    container_name: meshtastic_pipeline
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./logs:/app/logs
+
+  # ============================================================================
+  # Serviços Locais Opcionais (profile: local)
+  # Para testar o ambiente completo no Docker sem depender de conexões externas:
+  #   docker compose --profile local up -d
+  # ============================================================================
+  mariadb:
+    image: mariadb:11.2
+    container_name: local_mariadb
+    restart: unless-stopped
+    profiles: ["local"]
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: fatec_iot
+    ports:
+      - "3306:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: local_redis
+    restart: unless-stopped
+    profiles: ["local"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  mongo:
+    image: mongo:7.0
+    container_name: local_mongo
+    restart: unless-stopped
+    profiles: ["local"]
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mariadb_data:
+  redis_data:
+  mongo_data:
